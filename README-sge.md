@@ -5,9 +5,9 @@ A one-click script to setup and connect VS Code to a Sun Grid Engine (SGE) based
 ## Features
 This script is designed to be used with the [Remote - SSH](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-ssh) extension for Visual Studio Code. 
 
-- Automatically starts a batch job, or reuses an existing one, for vscode to connect to.
-- No need to manually execute the script on the HPC, just connect from the remote explorer and the script handles everything automagically through `ProxyCommand`.
-- Support for two different job types: CPU and GPU
+- Automatically starts a batch job, or reuses an existing one, for VS Code to connect to.
+- Just connect from the remote explorer and the script handles everything automatically through the ssh `ProxyCommand`.
+- Support for arbitrary types of jobs using `qsub` options.
 
 ## Requirements
 - `sshd` must be available on the compute node, installed in `/usr/sbin` or available in the PATH

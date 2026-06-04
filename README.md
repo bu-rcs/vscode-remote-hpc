@@ -52,7 +52,7 @@ type .\id_ed25519.pub | ssh bu_username@scc1.bu.edu "cat >> ~/.ssh/authorized_ke
  ```
 
 
-### Step 2: VS Code Setup
+### Step 2: SSH Config File Setup
 
 - Open VS Code.
 - Type `ctrl-shift-P` and enter `Remote-SSH: Settings`
@@ -61,47 +61,53 @@ type .\id_ed25519.pub | ssh bu_username@scc1.bu.edu "cat >> ~/.ssh/authorized_ke
 	* Windows:  `c:\users\windows_username\.ssh\config`
 	* Mac: `~/.ssh/config`
 - You can use any of the login nodes to handle your SSH connection (scc1.bu.edu, scc2, geo, or scc4), but as usual to connect to the scc4 you will need to be on the SCC campus network or connected via the VPN. The choice of login node has no impact on the connection of VS Code to the compute node. 
-- In the examples below replace `bu_username` with your BU username, and on Windows replace `windows_username` with the name of your account on your own computer.
+- In the examples below replace `bu_username` with your BU username, and on Windows replace `windows_username` with the name of your account on your own computer. **NOTE**: Your username needs to be set on the line with the *User* parameter **AND** on the line with the *ProxyCommand* parameter as shown.
 - Each `Host` definition in the `config` file defines a job by using `qsub` options for the `vscode-remote-sge` script. Two are defined below as examples but you can add as many as you want.
 	+ GPU jobs can be requested by adding GPU flags, for example `-l gpus=1 -l gpu_c=7.0`
 - If you normally need to specify a project with `-P proj_name` for a batch job you'll need to do the same here.
 - The job names have the format: `vscode-remote-<long string>.bu-username-<a number>`. If you add the `-N XYZ` flag to your job options the anme will appear after the `vscode-remote-` string in the job name, for example as `vscode-remote-XYZ`
-- The name of the `Host` section can be anything you want, the prefix `vscode-remote` is used here as an example.
+- The name of the `Host` section can be anything you want, the prefix `SCC-remote` is used here as an example.
 
 #### Windows
 Add this to the `config` file:
 ```
 # A 1-core 4-hour job
-Host vscode-remote-cpu
+Host SCC-remote-cpu
     User bu_username
     IdentityFile  c:\Users\windows_username\.ssh\id_ed25519
-    ProxyCommand "C:\Program Files\Git\usr\bin\ssh.exe" scc1.bu.edu  "~/bin/vscode-remote-sge -l h_rt=04:00:00"
+    ProxyCommand "C:\Program Files\Git\usr\bin\ssh.exe" bu_username@scc1.bu.edu  "~/bin/vscode-remote-sge -l h_rt=04:00:00"
     StrictHostKeyChecking no
   
 # A 4-core 12-hour job named "multicore"
-Host vscode-remote-cpu4
+Host SCC-remote-cpu4
     User bu_username
     IdentityFile  c:\Users\windows_username\.ssh\id_ed25519
-    ProxyCommand "C:\Program Files\Git\usr\bin\ssh.exe" scc1.bu.edu  "~/bin/vscode-remote-sge -N multicore -pe omp 4 -l h_rt=12:00:00"
+    ProxyCommand "C:\Program Files\Git\usr\bin\ssh.exe" bu_username@scc1.bu.edu  "~/bin/vscode-remote-sge -N multicore -pe omp 4 -l h_rt=12:00:00"
     StrictHostKeyChecking no
 ```
 #### Mac OS X
 Add this to the `config` file:
 ```
 # A 1-core 4-hour job
-Host vscode-remote-cpu
+Host SCC-remote-cpu
     User bu_username
     IdentityFile  ~/.ssh/id_ed25519
-    ProxyCommand ssh scc1.bu.edu  "~/bin/vscode-remote-sge -l h_rt=04:00:00"
+    ProxyCommand ssh bu_username@scc1.bu.edu  "~/bin/vscode-remote-sge -l h_rt=04:00:00"
     StrictHostKeyChecking no
   
 # A 4-core 12-hour job
-Host vscode-remote-cpu4
+Host SCC-remote-cpu4
     User bu_username
     IdentityFile  ~/.ssh/id_ed25519
-    ProxyCommand ssh scc1.bu.edu  "~/bin/vscode-remote-sge -pe omp 4 -l h_rt=12:00:00"
+    ProxyCommand ssh bu_username@scc1.bu.edu  "~/bin/vscode-remote-sge -pe omp 4 -l h_rt=12:00:00"
     StrictHostKeyChecking no
 ```
+
+### Step 3: VS Code Remote-SSH Setup
+In the VS Code window, type `Ctrl-Shift-P`, and enter *Remote-SSH: Settings* in the search box. This opens the settings for the `Remote-SSH` extension. 
+
+1. Set the **Connect Timeout** to a large value. This is the time that VS Code will wait for a job to be ready once requested. A value of 1800 is suggested.
+2. Make sure the following options are checked and enabled:  **Enable Agent Forwarding**, **Enable Dynamic Forwarding**, **Enable Remote Command**, and **Use Local Server**.
 
 
 ## Usage

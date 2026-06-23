@@ -26,6 +26,9 @@ function usage ()
     Use -N <label> to distinguish multiple jobs with identical resource flags.
     The label is prepended to the hash (e.g. jobA.HASH.username).
 
+    Use -z <modules> to load a comma-separated list of Lmod modules on the
+    compute node (e.g. -z openmpi/4.1.5_nvidia-2023-23.5,quantumespresso/7.3).
+
     Examples:
 
         Host vscode-remote-cpu-4
@@ -63,13 +66,19 @@ function usage ()
 
 function parse_qsub_args () {
     # Extract -N <label> from args (sets QSUB_JOB_LABEL).
+    # Extract -z <modules> from args (sets QSUB_MODULES) - a comma-separated
+    # list of Lmod modules to load on the compute node.
     # All remaining args are stored in QSUB_ARGS_ARRAY for passing to qsub.
     QSUB_JOB_LABEL=""
+    QSUB_MODULES=""
     QSUB_ARGS_ARRAY=()
 
     while [ $# -gt 0 ]; do
         if [ "$1" = "-N" ] && [ $# -gt 1 ]; then
             QSUB_JOB_LABEL="$2"
+            shift 2
+        elif [ "$1" = "-z" ] && [ $# -gt 1 ]; then
+            QSUB_MODULES="$2"
             shift 2
         else
             QSUB_ARGS_ARRAY+=("$1")
@@ -81,10 +90,11 @@ function parse_qsub_args () {
 function compute_job_prefix () {
     # Build the stable job-name prefix used to find/submit jobs:
     #   vscode-remote-[LABEL.]HASH.USER
-    # HASH is the md5 of the qsub args (excluding -N), so the same resource
-    # spec always maps to the same job, enabling automatic reconnection.
+    # HASH is the md5 of the qsub args (excluding -N) plus the module list, so
+    # the same resource spec and modules always map to the same job, enabling
+    # automatic reconnection (and distinct module sets get distinct jobs).
     local hash
-    hash=$(echo "${QSUB_ARGS_ARRAY[*]}" | md5sum | cut -d ' ' -f 1)
+    hash=$(echo "${QSUB_ARGS_ARRAY[*]} ${QSUB_MODULES}" | md5sum | cut -d ' ' -f 1)
 
     local prefix="vscode-remote-"
     if [ -n "$QSUB_JOB_LABEL" ]; then
@@ -244,7 +254,7 @@ function connect () {
     if [ -z "${JOB_STATE}" ]; then
         PORT=$(shuf -i 10000-65000 -n 1)
         # Submit job; -N sets the full job name (prefix + port for later discovery)
-        submit_output=$(qsub -N "$job_prefix-$PORT" "${QSUB_ARGS_ARRAY[@]}" "$SCRIPT_DIR/vscode-remote-job-sge.sh" "$PORT" 2>&1)
+        submit_output=$(qsub -N "$job_prefix-$PORT" "${QSUB_ARGS_ARRAY[@]}" "$SCRIPT_DIR/vscode-remote-job-sge.sh" "$PORT" "$QSUB_MODULES" 2>&1)
         JOB_SUBMIT_ID=$(echo "$submit_output" | grep -oE '[0-9]+' | head -1)
         >&2 echo "Submitted new job (id: $JOB_SUBMIT_ID, name: $job_prefix-$PORT)"
         >&2 echo "  qsub args: ${QSUB_ARGS_ARRAY[*]}"

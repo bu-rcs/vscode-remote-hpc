@@ -32,32 +32,32 @@ function usage ()
     Examples:
 
         Host vscode-remote-cpu-4
-            User bgregor
+            User USERNAME
             IdentityFile ~/.ssh/vscode-remote
             ProxyCommand ssh HPC-LOGIN \"~/bin/vscode-remote-sge -pe omp 4 -l h_rt=24:00:00\"
             StrictHostKeyChecking no
 
         Host vscode-remote-cpu-1
-            User bgregor
+            User USERNAME
             IdentityFile ~/.ssh/vscode-remote
             ProxyCommand ssh HPC-LOGIN \"~/bin/vscode-remote-sge -pe omp 1\"
             StrictHostKeyChecking no
 
         Host vscode-remote-gpu
-            User bgregor
+            User USERNAME
             IdentityFile ~/.ssh/vscode-remote
             ProxyCommand ssh HPC-LOGIN \"~/bin/vscode-remote-sge -pe omp 8 -l gpus=1 -l gpu_type=H200\"
             StrictHostKeyChecking no
 
         # Two independent 1-core sessions:
         Host vscode-remote-cpu-1a
-            User bgregor
+            User USERNAME
             IdentityFile ~/.ssh/vscode-remote
             ProxyCommand ssh HPC-LOGIN \"~/bin/vscode-remote-sge -pe omp 1 -N jobA\"
             StrictHostKeyChecking no
 
         Host vscode-remote-cpu-1b
-            User bgregor
+            User USERNAME
             IdentityFile ~/.ssh/vscode-remote
             ProxyCommand ssh HPC-LOGIN \"~/bin/vscode-remote-sge -pe omp 1 -N jobB\"
             StrictHostKeyChecking no

@@ -1,8 +1,9 @@
 #!/bin/bash -l
 # vscode-remote-job-sge.sh
 # Runs on an SGE compute node. Loads requested Lmod modules, captures the full
-# resulting environment to a per-job sh-sourceable file, wires it into the VS Code
+# resulting environment to a per-job file, wires it into the VS Code
 # server via ~/.vscode-server/server-env-setup, then launches sshd.
+#
 # Args: $1 = PORT, $2 = comma-separated Lmod modules (may be empty)
 
 PORT="$1"
@@ -46,9 +47,9 @@ load_modules () {
 }
 
 write_env_file () {
-    # $1 = destination. Build sh-sourceable export lines from env -0 (NUL-delimited
-    # so values with newlines survive). Single-quote escape so /bin/sh treats values
-    # literally. Skip non-identifier names (kills BASH_FUNC_x%%) and a blocklist.
+    # $1 = destination. Build sh-sourceable export lines from env -0.
+    # Single-quote escape so /bin/sh treats values
+    # literally. 
     local dest="$1" tmp="${1}.tmp.$$" name val esc
     {
         while IFS= read -r -d '' kv; do

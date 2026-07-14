@@ -177,7 +177,7 @@ function cancel () {
             full="$(echo "$row" | cut -d'|' -f2)"
             node="$(echo "$row" | cut -d'|' -f4)"
             echo "Cancelling job $jid (${full}${node:+ on $node})"
-            scancel "$jid" 2>/dev/null
+            scancel --signal=9 "$jid" 2>/dev/null
         done
         timeout
         sleep 2

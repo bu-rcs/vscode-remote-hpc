@@ -71,7 +71,7 @@ Add an entry to your local machine's `~/.ssh/config` for each job you want. Chan
 Host vscode-remote-cpu
     User USERNAME
     IdentityFile ~/.ssh/vscode-remote
-    ProxyCommand ssh HPC-LOGIN "~/bin/vscode-remote -c 4 -t 12:00:00 --mem=32G"
+    ProxyCommand ssh USERNAME@HPC-LOGIN "~/bin/vscode-remote -c 4 -t 12:00:00 --mem=32G"
     StrictHostKeyChecking no
 ```
 
@@ -81,7 +81,7 @@ For a GPU job, add the appropriate Slurm flags, for example:
 Host vscode-remote-gpu
     User USERNAME
     IdentityFile ~/.ssh/vscode-remote
-    ProxyCommand ssh HPC-LOGIN "~/bin/vscode-remote -c 8 --gpus=1 -t 04:00:00 --mem=32G"
+    ProxyCommand ssh USERNAME@HPC-LOGIN "~/bin/vscode-remote -c 8 --gpus=1 -t 04:00:00 --mem=32G"
     StrictHostKeyChecking no
 ```
 
@@ -98,21 +98,49 @@ Example of two independent single-core sessions and a module-loading session:
 Host vscode-remote-a
     User USERNAME
     IdentityFile ~/.ssh/vscode-remote
-    ProxyCommand ssh HPC-LOGIN "~/bin/vscode-remote -c 1 -J jobA"
+    ProxyCommand ssh USERNAME@HPC-LOGIN "~/bin/vscode-remote -c 1 -J jobA"
     StrictHostKeyChecking no
 
 Host vscode-remote-b
     User USERNAME
     IdentityFile ~/.ssh/vscode-remote
-    ProxyCommand ssh HPC-LOGIN "~/bin/vscode-remote -c 1 -J jobB"
+    ProxyCommand ssh USERNAME@HPC-LOGIN "~/bin/vscode-remote -c 1 -J jobB"
     StrictHostKeyChecking no
-
+# Load gcc and openmpi modules with the -z flag.
 Host vscode-remote-openmpi
     User USERNAME
     IdentityFile ~/.ssh/vscode-remote
     ProxyCommand ssh HPC-LOGIN "~/bin/vscode-remote -c 8 --mem=32G -z gcc/12.2.0,openmpi/4.1.5"
     StrictHostKeyChecking no
 ```
+### AICR System
+The AICR system uses an SSH certificate. This requires a slightly more elaborate `.ssh/config` setup as the
+identity file and certificate need to be specified in the ProxyCommand:
+```bash
+# Linux / Mac:
+Host aicr-vsc-cpu
+    HostName login.aicr.ai
+    User USERNAME
+    StrictHostKeyChecking no
+    IdentityFile ~/.ssh/id_ed25519_aicr
+    CertificateFile ~/.ssh/id_ed25519_aicr-cert.pub
+    UserKnownHostsFile /dev/null
+    ProxyCommand ssh -i ~/.ssh/id_ed25519_aicr -o CertificateFile=~/.ssh/id_ed25519_aicr-cert.pub USERNAME@login.aicr.ai "~/bin/vscode-remote --partition=cpu --time=08:00:00 --cpus-per-task 1 --mem=16GB -z conda/latest"
+
+
+# Windows: Note the full path to the Github SSH program. This is
+# installed automatically with VS Code and needs to be used instead of the default
+# Windows ssh.exe
+Host aicr-vsc-cpu
+    HostName login.aicr.ai
+    User USERNAME
+    StrictHostKeyChecking no
+    IdentityFile ~/.ssh/id_ed25519_aicr
+    CertificateFile ~/.ssh/id_ed25519_aicr-cert.pub
+    UserKnownHostsFile /dev/null
+    ProxyCommand "C:\Program Files\Git\usr\bin\ssh.exe" -i ~/.ssh/id_ed25519_aicr -o CertificateFile=~/.ssh/id_ed25519_aicr-cert.pub USERNAME@login.aicr.ai "~/bin/vscode-remote --partition=cpu --time=08:00:00 --cpus-per-task 1 --mem=16GB -z conda/latest"
+```
+
 
 ## Usage
 The configured hosts are now available in the VS Code remote explorer. Connecting to a host will automatically launch a batch job with the options from its `ProxyCommand`, wait for it to start, and connect to the node when the job is running.

@@ -55,7 +55,7 @@ type .\id_ed25519.pub | ssh bu_username@scc1.bu.edu "cat >> ~/.ssh/authorized_ke
 ### Step 2: SSH Config File Setup
 
 - Open VS Code.
-- Type `ctrl-shift-P` and enter `Remote-SSH: Settings`
+- Type `ctrl-shift-P` (Mac: `cmd-shift-P`) and enter `Remote-SSH: Settings`
 	+ In the settings, look for the `Remote.SSH: Connect Timeout` value and set it to 1800 seconds. This is 30 minutes, and is the same value set on the script that runs on the SCC.
 - click the File menu -> Open a File.
 	* Windows:  `c:\users\windows_username\.ssh\config`
@@ -104,7 +104,7 @@ Host SCC-remote-cpu4
 ```
 
 ### Step 3: VS Code Remote-SSH Setup
-In the VS Code window, type `Ctrl-Shift-P`, and enter *Remote-SSH: Settings* in the search box. This opens the settings for the `Remote-SSH` extension. 
+In the VS Code window, type `ctrl-shift-P` (Mac: `cmd-shift-P`), and enter *Remote-SSH: Settings* in the search box. This opens the settings for the `Remote-SSH` extension. 
 
 1. Set the **Connect Timeout** to a large value. This is the time that VS Code will wait for a job to be ready once requested. A value of 1800 is suggested.
 2. Make sure the following options are checked and enabled:  **Enable Agent Forwarding**, **Enable Dynamic Forwarding**, **Enable Remote Command**, and **Use Local Server**.
@@ -114,7 +114,7 @@ In the VS Code window, type `Ctrl-Shift-P`, and enter *Remote-SSH: Settings* in 
 The defined hosts are now available in the VS Code remote explorer. Connecting to this host will automatically launch a batch job on an SCC compute node, wait for it to start, and connect to the node when the job is running.
 
 ### Make a Connection
-In VS Code type `ctrl-shift-P` and enter `Remote-SSH: Connect to Host...`  Select one of the listed hosts and click it to open a new window. The new job will connect via SSH to the login node, call `qsub` with your job options, and when the job is started automatically connect thru to the compute node. 
+In VS Code type `ctrl-shift-P` (Mac: `cmd-shift-P`) and enter `Remote-SSH: Connect to Host...`  Select one of the listed hosts and click it to open a new window. The new job will connect via SSH to the login node, call `qsub` with your job options, and when the job is started automatically connect thru to the compute node. 
 
 Running jobs are **automatically reused**. If a running job for a host definition is already found, VS Code will simply connect to it. You can safely open many remote windows and they will all share the same running job. 
 

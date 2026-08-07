@@ -23,11 +23,11 @@ The script will be installed in your home directory `~/bin` and added to your PA
 
 ## Setup
 
-### Step 1: SSH key 
- __If you have already set up SSH keys for passwordless access to the SCC skip this entire step!__
+### Step 1: SSH key generation
+ __If you have already set up SSH keys for passwordless access to the SCC or another system you can skip this entire step!__
   
   *Windows*
-  Press the windows key on your keyboard, enter `powershell`, and open a Powershell command line window. 
+  Press the Windows key on your keyboard, enter `powershell`, and open a Powershell command line window. 
   
   *Mac OS X*
   Open a Terminal window.
@@ -55,8 +55,6 @@ type .\id_ed25519.pub | ssh bu_username@scc1.bu.edu "cat >> ~/.ssh/authorized_ke
 ### Step 2: SSH Config File Setup
 
 - Open VS Code.
-- Type `ctrl-shift-P` (Mac: `cmd-shift-P`) and enter `Remote-SSH: Settings`
-	+ In the settings, look for the `Remote.SSH: Connect Timeout` value and set it to 1800 seconds. This is 30 minutes, and is the same value set on the script that runs on the SCC.
 - click the File menu -> Open a File.
 	* Windows:  `c:\users\windows_username\.ssh\config`
 	* Mac: `~/.ssh/config`

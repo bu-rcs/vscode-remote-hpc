@@ -76,11 +76,12 @@ Host SCC-remote-cpu
     ProxyCommand "C:\Program Files\Git\usr\bin\ssh.exe" bu_username@scc1.bu.edu  "~/bin/vscode-remote-sge -l h_rt=04:00:00"
     StrictHostKeyChecking no
   
-# A 4-core 12-hour job named "multicore"
+# A 4-core 12-hour job where the SCC job is named "multicore"
+# Modules python3/3.13.8 and matlab/2025a are preloaded
 Host SCC-remote-cpu4
     User bu_username
     IdentityFile  c:\Users\windows_username\.ssh\id_ed25519
-    ProxyCommand "C:\Program Files\Git\usr\bin\ssh.exe" bu_username@scc1.bu.edu  "~/bin/vscode-remote-sge -N multicore -pe omp 4 -l h_rt=12:00:00"
+    ProxyCommand "C:\Program Files\Git\usr\bin\ssh.exe" bu_username@scc1.bu.edu  "~/bin/vscode-remote-sge -N multicore -pe omp 4 -l h_rt=12:00:00 -z python3/3.13.8,matlab/2025a"
     StrictHostKeyChecking no
 ```
 #### Mac OS X
@@ -94,10 +95,11 @@ Host SCC-remote-cpu
     StrictHostKeyChecking no
   
 # A 4-core 12-hour job
+# Modules python3/3.13.8 and matlab/2025a are preloaded
 Host SCC-remote-cpu4
     User bu_username
     IdentityFile  ~/.ssh/id_ed25519
-    ProxyCommand ssh bu_username@scc1.bu.edu  "~/bin/vscode-remote-sge -pe omp 4 -l h_rt=12:00:00"
+    ProxyCommand ssh bu_username@scc1.bu.edu  "~/bin/vscode-remote-sge -pe omp 4 -l h_rt=12:00:00  -z python3/3.13.8,matlab/2025a"
     StrictHostKeyChecking no
 ```
 

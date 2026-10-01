@@ -2,7 +2,7 @@
 
 INSTALL_DIR=$HOME/bin
 
-echo "Installing vscode-remote-sge in $INSTALL_DIR"
+echo "Installing vscode-remote-scc in $INSTALL_DIR"
 
 if [ ! -d "$INSTALL_DIR" ]; then
     mkdir -p $INSTALL_DIR
@@ -30,12 +30,12 @@ fi
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-cp $SCRIPT_DIR/vscode-remote-sge.sh $INSTALL_DIR/vscode-remote-sge
-cp $SCRIPT_DIR/vscode-remote-job-sge.sh $INSTALL_DIR
-chmod +x $INSTALL_DIR/vscode-remote-sge
+cp $SCRIPT_DIR/vscode-remote-scc.sh $INSTALL_DIR/vscode-remote-scc
+cp $SCRIPT_DIR/vscode-remote-job-scc.sh $INSTALL_DIR
+chmod +x $INSTALL_DIR/vscode-remote-scc
 
-echo "  + vscode-remote-sge installed in $INSTALL_DIR"
+echo "  + vscode-remote-scc installed in $INSTALL_DIR"
 
 if [ ! -z "$SOURCE" ]; then
-    echo "Restart your shell or run 'source ~/$SOURCE' to use vscode-remote-sge"
+    echo "Restart your shell or run 'source ~/$SOURCE' to use vscode-remote-scc"
 fi

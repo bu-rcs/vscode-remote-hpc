@@ -34,32 +34,32 @@ function usage ()
         Host vscode-remote-cpu-4
             User USERNAME
             IdentityFile ~/.ssh/vscode-remote
-            ProxyCommand ssh HPC-LOGIN \"~/bin/vscode-remote-sge -pe omp 4 -l h_rt=24:00:00\"
+            ProxyCommand ssh HPC-LOGIN \"~/bin/vscode-remote-scc -pe omp 4 -l h_rt=24:00:00\"
             StrictHostKeyChecking no
 
         Host vscode-remote-cpu-1
             User USERNAME
             IdentityFile ~/.ssh/vscode-remote
-            ProxyCommand ssh HPC-LOGIN \"~/bin/vscode-remote-sge -pe omp 1\"
+            ProxyCommand ssh HPC-LOGIN \"~/bin/vscode-remote-scc -pe omp 1\"
             StrictHostKeyChecking no
 
         Host vscode-remote-gpu
             User USERNAME
             IdentityFile ~/.ssh/vscode-remote
-            ProxyCommand ssh HPC-LOGIN \"~/bin/vscode-remote-sge -pe omp 8 -l gpus=1 -l gpu_type=H200\"
+            ProxyCommand ssh HPC-LOGIN \"~/bin/vscode-remote-scc -pe omp 8 -l gpus=1 -l gpu_type=H200\"
             StrictHostKeyChecking no
 
         # Two independent 1-core sessions:
         Host vscode-remote-cpu-1a
             User USERNAME
             IdentityFile ~/.ssh/vscode-remote
-            ProxyCommand ssh HPC-LOGIN \"~/bin/vscode-remote-sge -pe omp 1 -N jobA\"
+            ProxyCommand ssh HPC-LOGIN \"~/bin/vscode-remote-scc -pe omp 1 -N jobA\"
             StrictHostKeyChecking no
 
         Host vscode-remote-cpu-1b
             User USERNAME
             IdentityFile ~/.ssh/vscode-remote
-            ProxyCommand ssh HPC-LOGIN \"~/bin/vscode-remote-sge -pe omp 1 -N jobB\"
+            ProxyCommand ssh HPC-LOGIN \"~/bin/vscode-remote-scc -pe omp 1 -N jobB\"
             StrictHostKeyChecking no
     "
 }
@@ -254,7 +254,7 @@ function connect () {
     if [ -z "${JOB_STATE}" ]; then
         PORT=$(shuf -i 10000-65000 -n 1)
         # Submit job; -N sets the full job name (prefix + port for later discovery)
-        submit_output=$(qsub -N "$job_prefix-$PORT" "${QSUB_ARGS_ARRAY[@]}" "$SCRIPT_DIR/vscode-remote-job-sge.sh" "$PORT" "$QSUB_MODULES" 2>&1)
+        submit_output=$(qsub -N "$job_prefix-$PORT" "${QSUB_ARGS_ARRAY[@]}" "$SCRIPT_DIR/vscode-remote-job-scc.sh" "$PORT" "$QSUB_MODULES" 2>&1)
         JOB_SUBMIT_ID=$(echo "$submit_output" | grep -oE '[0-9]+' | head -1)
         >&2 echo "Submitted new job (id: $JOB_SUBMIT_ID, name: $job_prefix-$PORT)"
         >&2 echo "  qsub args: ${QSUB_ARGS_ARRAY[*]}"

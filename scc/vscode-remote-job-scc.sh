@@ -1,5 +1,5 @@
 #!/bin/bash -l
-# vscode-remote-job-sge.sh
+# vscode-remote-job-scc.sh
 # Runs on an SGE compute node. Loads requested Lmod modules, captures the full
 # resulting environment to a per-job file, wires it into the VS Code
 # server via ~/.vscode-server/server-env-setup, then launches sshd.

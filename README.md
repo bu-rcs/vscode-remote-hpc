@@ -1,149 +1,35 @@
-# vscode-remote-hpc for the BU SCC
+# vscode-remote-hpc
 
-A one-click script to setup and connect VS Code to an SCC compute node, directly from the VS Code remote explorer.
+Run VS Code on an HPC compute node with one click from the VS Code remote explorer. This software is inspired by and is heavily based on [Gert Mertes' original code](https://github.com/gmertes).
 
-## Features
-This script is designed to be used with the [Remote - SSH](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-ssh) extension for Visual Studio Code. 
+## What it does
+Login nodes on an HPC system are shared and aren't meant for heavy work. VS Code's [Remote - SSH](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-ssh) extension, when used on an HPC system, connects to the login nodes. `vscode-remote-hpc` lets VS Code connect to a compute node inside a batch job instead, so your editor, terminals, debugger, and extensions all run with the CPUs, GPUs, memory, and software of a regular cluster job.
 
-- Automatically starts a batch job, or reuses an existing one, for VS Code to connect to.
-- Just connect from the remote explorer and the script handles everything automatically through the ssh `ProxyCommand`.
-- Support for arbitrary types of jobs using `qsub` options.
+You install a small script in your HPC account and add a few entries to the SSH config file on your own computer. Each entry describes a job (cores, time limit, GPUs, modules to load, and so on). When you connect to one of those entries from VS Code, the script, run through the ssh `ProxyCommand`:
 
-## SCC Setup
+- submits a batch job with your options, or reuses one that is already running,
+- starts a private `sshd` inside the job and waits for the job to start,
+- connects VS Code through the login node to the compute node.
 
-Git clone the repo using the command line on the SCC:
+Jobs are reused automatically, so many VS Code windows can share one job. Closing VS Code does not end the job; it stops when it reaches its time limit, or when you cancel it with the included `list`/`cancel` commands executed on the HPC system's login node. Software modules (like [Lmod](https://lmod.readthedocs.io/en/latest/)) can optionally be loaded in the job, and the loaded modules are available in VS Code and its terminals.
 
-```shell
-git clone https://github.com/bu-rcs/vscode-remote-hpc.git
-cd vscode-remote-hpc
-bash install-sge.sh
-```
+## Getting started
+Pick the instructions for the system you use:
 
-The script will be installed in your home directory `~/bin` and added to your PATH. 
+- **Boston University users**
+  - **Shared Computing Cluster (SCC):** follow [README-scc.md](README-scc.md). The SCC uses the Grid Engine scheduler, so it has its own scripts in the `scc` folder, and the instructions include the BU-specific settings.
 
-## Setup
+- **AICR system:** AICR uses Slurm. Follow [README-slurm.md](README-slurm.md), and then follow the the AICR SSH settings as described in [README-AICR.md](README-AICR.md) for the SSH config step.
 
-### Step 1: SSH key generation
- __If you have already set up SSH keys for passwordless access to the SCC or another system you can skip this entire step!__
-  
-  *Windows*
-  Press the Windows key on your keyboard, enter `powershell`, and open a Powershell command line window. 
-  
-  *Mac OS X*
-  Open a Terminal window.
-  
-Create an SSH key for logging on to the SCC:
-  
-  ```powershell
-  cd ~/.ssh
-  ls
-  # If files called id_ed25519 and id_ed25519.pub exist, 
-  # skip this next step. Otherwise do:
-  ssh-keygen -t ed25519 -N ""
-  
-# Now copy the key to the SCC. In these
-# commands replace bu_username with your
-# actual BU username.
-# On a Mac run:
-ssh-copy-id -i ~/.ssh/id_ed25519 bu_username@scc1.bu.edu
+- **Everyone else (i.e. HPC systems that use the Slurm scheduler):** follow [README-slurm.md](README-slurm.md). It uses the scripts in the `slurm` folder. The Slurm configuration is deliberately more generic than the BU SCC configuration and you will need to do some customization to some files like `~/.ssh/config` to make it work correctly for you.
 
-# On Windows it's a little more complicated:
-type .\id_ed25519.pub | ssh bu_username@scc1.bu.edu "cat >> ~/.ssh/authorized_keys"
- ```
+If you're not sure which scheduler your system uses, run `which sbatch qsub` on its login node. If `sbatch` is found the system uses Slurm (some Slurm systems also provide a `qsub` look-alike); if only `qsub` is found it uses Grid Engine. If you are using this on a Grid Engine scheduler on an HPC system other than the BU SCC you will need to modify elements like the login node name. 
 
+## What's in this repo
 
-### Step 2: SSH Config File Setup
-
-- Open VS Code.
-- click the File menu -> Open a File.
-	* Windows:  `c:\users\windows_username\.ssh\config`
-	* Mac: `~/.ssh/config`
-- You can use any of the login nodes to handle your SSH connection (scc1.bu.edu, scc2, geo, or scc4), but as usual to connect to the scc4 you will need to be on the SCC campus network or connected via the VPN. The choice of login node has no impact on the connection of VS Code to the compute node. 
-- In the examples below replace `bu_username` with your BU username, and on Windows replace `windows_username` with the name of your account on your own computer. **NOTE**: Your username needs to be set on the line with the *User* parameter **AND** on the line with the *ProxyCommand* parameter as shown.
-- Each `Host` definition in the `config` file defines a job by using `qsub` options for the `vscode-remote-sge` script. Two are defined below as examples but you can add as many as you want.
-	+ GPU jobs can be requested by adding GPU flags, for example `-l gpus=1 -l gpu_c=7.0`
-- If you normally need to specify a project with `-P proj_name` for a batch job you'll need to do the same here.
-- The job names have the format: `vscode-remote-<long string>.bu-username-<a number>`. If you add the `-N XYZ` flag to your job options the anme will appear after the `vscode-remote-` string in the job name, for example as `vscode-remote-XYZ`
-- The name of the `Host` section can be anything you want, the prefix `SCC-remote` is used here as an example.
-
-#### Windows
-Add this to the `config` file:
-```
-# A 1-core 4-hour job
-Host SCC-remote-cpu
-    User bu_username
-    IdentityFile  c:\Users\windows_username\.ssh\id_ed25519
-    ProxyCommand "C:\Program Files\Git\usr\bin\ssh.exe" bu_username@scc1.bu.edu  "~/bin/vscode-remote-sge -l h_rt=04:00:00"
-    StrictHostKeyChecking no
-  
-# A 4-core 12-hour job where the SCC job is named "multicore"
-# Modules python3/3.13.8 and matlab/2025a are preloaded
-Host SCC-remote-cpu4
-    User bu_username
-    IdentityFile  c:\Users\windows_username\.ssh\id_ed25519
-    ProxyCommand "C:\Program Files\Git\usr\bin\ssh.exe" bu_username@scc1.bu.edu  "~/bin/vscode-remote-sge -N multicore -pe omp 4 -l h_rt=12:00:00 -z python3/3.13.8,matlab/2025a"
-    StrictHostKeyChecking no
-```
-#### Mac OS X
-Add this to the `config` file:
-```
-# A 1-core 4-hour job
-Host SCC-remote-cpu
-    User bu_username
-    IdentityFile  ~/.ssh/id_ed25519
-    ProxyCommand ssh bu_username@scc1.bu.edu  "~/bin/vscode-remote-sge -l h_rt=04:00:00"
-    StrictHostKeyChecking no
-  
-# A 4-core 12-hour job
-# Modules python3/3.13.8 and matlab/2025a are preloaded
-Host SCC-remote-cpu4
-    User bu_username
-    IdentityFile  ~/.ssh/id_ed25519
-    ProxyCommand ssh bu_username@scc1.bu.edu  "~/bin/vscode-remote-sge -pe omp 4 -l h_rt=12:00:00  -z python3/3.13.8,matlab/2025a"
-    StrictHostKeyChecking no
-```
-
-### Step 3: VS Code Remote-SSH Setup
-In the VS Code window, type `ctrl-shift-P` (Mac: `cmd-shift-P`), and enter *Remote-SSH: Settings* in the search box. This opens the settings for the `Remote-SSH` extension. 
-
-1. Set the **Connect Timeout** to a large value. This is the time that VS Code will wait for a job to be ready once requested. A value of 1800 is suggested.
-2. Make sure the following options are checked and enabled:  **Enable Agent Forwarding**, **Enable Dynamic Forwarding**, **Enable Remote Command**, and **Use Local Server**.
-
-
-## Usage
-The defined hosts are now available in the VS Code remote explorer. Connecting to this host will automatically launch a batch job on an SCC compute node, wait for it to start, and connect to the node when the job is running.
-
-### Make a Connection
-In VS Code type `ctrl-shift-P` (Mac: `cmd-shift-P`) and enter `Remote-SSH: Connect to Host...`  Select one of the listed hosts and click it to open a new window. The new job will connect via SSH to the login node, call `qsub` with your job options, and when the job is started automatically connect thru to the compute node. 
-
-Running jobs are **automatically reused**. If a running job for a host definition is already found, VS Code will simply connect to it. You can safely open many remote windows and they will all share the same running job. 
-
-Note that disconnecting the remote session in vscode will **not** kill the job on the SCC. You can close the remote window and the job will keep running. Jobs are expected to be automatically killed by the job scheduler when they reach their time limit. You can manually kill the job using `qdel` or with the `vscode-remote-sge cancel` command (see [CLI](#CLI)).
-
-## CLI
-The `vscode-remote-sge` command installed on your HPC offers some commands to list or cancel running jobs. Do `vscode-remote-sge help` for help on its usage.
-
-```bash
-$ vscode-remote-sge help
-Usage :  ~/bin/vscode-remote-sge [command]
-
-    General commands:
-    list      List running vscode-remote jobs
-    cancel    Cancels ALL running vscode-remote jobs
-    ssh       SSH into the node of a running job
-    help      Display this message
-```
-
-## Troubleshooting
-
-### Job stays in "qw" (queued waiting) state
-This usually means that either the requested resources are in high demand (i.e. you are simply waiting) or the scheduler cannot allocate the resources you requested. Check:
-- In a terminal on the SCC, try your job options with `qrsh` to make sure they are valid, e.g.:
-```bash
-qrsh -l h_rt=04:00 -N m_job
-```
-
-### Job started but VS Code fails to connect
-- Edit the `~/bin/vscode-remote-sge` script on the SCC and increase the `TIMEOUT` value. The default is 1800 seconds (30 minutes). In your local VS Code you will also need to set the `Remote.SSH: Connect Timeout` to the same value.  
-
-
+| Path | What it is |
+| --- | --- |
+| `scc/` | Scripts for the BU SCC: `install-scc.sh` installs `vscode-remote-scc.sh` (and its job script `vscode-remote-job-scc.sh`) in your SCC account. |
+| `scc/local_installers/` | `install-mac-scc.sh` and `install-win-scc.ps1` set up your own Mac or Windows computer to connect to the SCC. |
+| `slurm/` | Scripts for Slurm systems: `install.sh` installs `vscode-remote.sh` (and its job script `vscode-remote-job.sh`) in your account on the HPC system. |
+| `slurm/local_installers/` | `install-mac-slurm.sh` and `install-win-slurm.ps1` set up your own Mac or Windows computer to connect to a Slurm system. |
